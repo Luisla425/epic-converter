@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Converter LUAN Arichuna ⚡</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffd700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root { --primary: #ffd700; --bg: #1a1a2e; --card: rgba(255,255,255,0.08); --success: #4ecca3; --warning: #ffa500; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: #fff; padding: 15px; min-height: 100vh; }
+        .header { text-align: center; margin-bottom: 20px; position: relative; }
+        .refresh-btn { position: absolute; right: 0; top: 0; background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+        h1 { color: var(--primary); font-size: 1.6rem; text-shadow: 0 0 10px rgba(255,215,0,0.3); line-height: 1.2; }
+        .glass { background: var(--card); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .status-badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 20px; float: right; font-weight: bold; margin-top: 5px; color: #1a1a2e; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .rate-card { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .rate-card.selected { border-color: var(--primary); background: rgba(255, 215, 0, 0.1); }
+        .val { font-size: 1.3rem; font-weight: bold; color: var(--success); display: block; }
+        .label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
+        label { font-size: 0.75rem; margin-left: 5px; color: #ccc; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: #252945; color: #fff; font-size: 1.1rem; outline: none; }
+        .tasa-input { border: 2px solid var(--primary) !important; background: rgba(255, 215, 0, 0.05) !important; font-weight: bold; color: var(--primary) !important; }
+        .toggle-container { display:flex; gap:8px; margin: 10px 0; }
+        .toggle-btn { flex:1; padding:12px; border-radius:8px; border:none; background: #333; color: #fff; font-weight: bold; cursor: pointer; }
+        .active { background: var(--primary) !important; color: #1a1a2e !important; }
+        .res-box { background: rgba(78, 204, 163, 0.1); padding: 20px; border-radius: 12px; margin-top: 15px; text-align: center; border: 1px dashed var(--success); }
+        .btn-wa { background: #25D366; color: #fff; border: none; width: 100%; padding: 16px; border-radius: 10px; font-weight: bold; font-size: 1rem; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        .spinner { border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <p>Iniciando Epic Converter...</p>
+</div>
+
+<div class="header">
+    <button class="refresh-btn" onclick="loadData()">🔄</button>
+    <h1>Epic Converter<br>LUAN Arichuna ⚡</h1>
+    <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 5px;">LUANSystem™ Professional</p>
+</div>
+
+<div class="glass">
+    <span id="bStatus" class="status-badge" style="background:var(--warning)">CARGANDO...</span>
+    <h3 style="font-size: 0.85rem; color: var(--primary);">📈 Referencias del Mercado</h3>
+    <div class="grid">
+        <div class="rate-card" id="card-BCV" onclick="selectRate('BCV')"><span class="label">BCV</span><span class="val" id="vBCV">0.00</span></div>
+        <div class="rate-card" id="card-BIN" onclick="selectRate('BIN')"><span class="label">Binance</span><span class="val" id="vBIN">0.00</span></div>
+        <div class="rate-card" id="card-PAR" onclick="selectRate('PAR')"><span class="label">Paralelo</span><span class="val" id="vPAR">0.00</span></div>
+        <div class="rate-card" id="card-EUR" onclick="selectRate('EUR')"><span class="label">Euro</span><span class="val" id="vEUR">0.00</span></div>
+    </div>
+</div>
+
+<div class="glass">
+    <h3 style="font-size: 0.85rem; color: var(--primary);">⚖️ Calculadora Dinámica</h3>
+    <div class="toggle-container">
+        <button id="btnV" class="toggle-btn active" onclick="setMode('V')">Vendo USD</button>
+        <button id="btnC" class="toggle-btn" onclick="setMode('C')">Compro USD</button>
+    </div>
+    <label>MONTO EN DÓLARES ($)</label>
+    <input type="number" id="monto" placeholder="Ej: 100" inputmode="decimal">
+    <label id="labelTasa">TASA DE CAMBIO (Bs/$)</label>
+    <input type="number" id="tasa" class="tasa-input" step="0.01" inputmode="decimal">
+    <div id="resBox" class="res-box" style="display:none;">
+        <p id="resLabel" style="font-size: 0.8rem; color: #aaa;">Total a recibir:</p>
+        <h2 id="resTotal" style="color: var(--success); font-size: 2.2rem;">Bs 0.00</h2>
+    </div>
+    <button class="btn-wa" onclick="sendWA()">Compartir por WhatsApp</button>
+</div>
+
+<footer style="text-align:center;font-size:0.7rem;opacity:0.4;padding:20px;">LUANSystem™ Arichuna | Honor Magic 7 Lite</footer>
+
+<script>
+let rates={BCV:0,PAR:0,BIN:0,EUR:0},mode='V',manualEdit=false,selectedSource='BIN';
+
+async function loadData(){
+    try{
+        const r=await fetch('https://ve.dolarapi.com/v1/dolares').then(r=>r.json());
+        rates.BCV = r.find(d=>d.fuente==='oficial').promedio;
+        rates.PAR = r.find(d=>d.fuente==='paralelo').promedio;
+        rates.EUR = rates.BCV * 1.085;
+        rates.BIN = rates.PAR + 0.15; // Ajuste base si no hay API Binance
+        
+        bStatus.innerText = "SISTEMA ONLINE ●";
+        bStatus.style.background = "var(--success)";
+        render();
+    }catch(e){
+        bStatus.innerText = "OFFLINE ●";
+    }finally{
+        document.getElementById('loading').style.display='none';
+    }
+}
+
+function render(){
+    document.getElementById('vBCV').innerText=rates.BCV.toFixed(2);
+    document.getElementById('vPAR').innerText=rates.PAR.toFixed(2);
+    document.getElementById('vBIN').innerText=rates.BIN.toFixed(2);
+    document.getElementById('vEUR').innerText=rates.EUR.toFixed(2);
+    if(!manualEdit) selectRate('BIN');
+}
+
+function selectRate(s){
+    selectedSource=s;
+    manualEdit=false;
+    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('card-'+s).classList.add('selected');
+    tasa.value=rates[s].toFixed(2);
+    labelTasa.innerText = "TASA DE " + s;
+    labelTasa.style.color = "#ccc";
+    calc();
+}
+
+function setMode(m){
+    mode=m;
+    document.getElementById('btnV').classList.toggle('active', m === 'V');
+    document.getElementById('btnC').classList.toggle('active', m === 'C');
+    document.getElementById('resLabel').innerText = m === 'V' ? 'Total a recibir:' : 'Total a pagar:';
+    calc();
+}
+
+function calc(){
+    const m=+monto.value||0, t=+tasa.value||0;
+    if(m&&t){
+        resBox.style.display='block';
+        resTotal.innerText="Bs "+(m*t).toLocaleString('es-VE',{minimumFractionDigits:2});
+    } else resBox.style.display='none';
+}
+
+function sendWA(){
+    const m = monto.value;
+    const t = tasa.value;
+    const total = resTotal.innerText;
+    const accion = mode === 'V' ? "Venta" : "Compra";
+    const handshake = manualEdit ? "🤝" : "📊";
+    const titulo = manualEdit ? "Trato Realizado" : "Cotización de Mercado";
+    const etiquetaTasa = manualEdit ? "Tasa de Consenso" : "Tasa de " + selectedSource;
+
+    const txt = `⚡ *Epic Converter LUAN Arichuna*\n\n` +
+                `${handshake} *${titulo}:* ${accion} de Saldo\n` +
+                `💵 *Monto:* $${m}\n` +
+                `📊 *${etiquetaTasa}:* ${t} Bs\n` +
+                `💰 *Total:* ${total}\n\n` +
+                `_LUANSystem™ Professional_`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`);
+}
+
+tasa.oninput=()=>{ 
+    manualEdit=true; 
+    selectedSource="MANUAL";
+    labelTasa.innerText = "TASA DE CONSENSO (ACORDADA)";
+    labelTasa.style.color = "var(--primary)";
+    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
+    calc(); 
+};
+monto.oninput=calc;
+loadData();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+
+</body>
+</html>

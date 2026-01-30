@@ -1,0 +1,23 @@
+{
+  "name": "Epic Converter LUAN Arichuna",
+  "short_name": "LUAN Conv",
+  "description": "Calculadora Profesional de Cambios LUANSystem",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ffd700",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2150/2150062.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2150/2150062.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
