@@ -4,134 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Epic Converter LUAN Arichuna ⚡</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffd700">
-    <link rel="apple-touch-icon" href="logo.png">
-
     <style>
-        :root {
-            --bg-color: #1a1a2e;
-            --card-bg: #16213e;
-            --accent-color: #ffd700;
-            --text-color: #ffffff;
-            --input-bg: #0f3460;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background: var(--card-bg); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border: 2px solid var(--accent-color); }
-        h1 { text-align: center; color: var(--accent-color); margin-bottom: 20px; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
-        .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .rate-box { background: var(--input-bg); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
-        .rate-box.active { border-color: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); }
-        .rate-label { font-size: 0.8rem; opacity: 0.8; display: block; }
-        .rate-value { font-weight: bold; color: var(--accent-color); font-size: 1.1rem; }
-        .toggle-container { display: flex; gap: 10px; margin-bottom: 20px; }
-        .toggle-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; background: var(--input-bg); color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .toggle-btn.active { background: var(--accent-color); color: black; }
-        .input-group { margin-bottom: 20px; position: relative; }
-        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--accent-color); font-weight: bold; }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--input-bg); color: white; font-size: 1.2rem; text-align: center; outline: none; border: 2px solid transparent; }
-        input:focus { border-color: var(--accent-color); }
-        .result-container { text-align: center; background: rgba(255, 215, 0, 0.1); padding: 20px; border-radius: 15px; margin-top: 10px; }
-        .result-label { font-size: 0.9rem; margin-bottom: 5px; }
-        .result-value { font-size: 2rem; font-weight: bold; color: var(--accent-color); }
-        .share-btn { width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 12px; background: #25D366; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .refresh-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--accent-color); cursor: pointer; font-size: 1.2rem; }
+        :root { --primary: #ffd700; --bg: #1a1a2e; --card: rgba(255,255,255,0.08); --success: #4ecca3; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: #fff; padding: 15px; min-height: 100vh; }
+        .header { text-align: center; margin-bottom: 20px; position: relative; }
+        .refresh-btn { position: absolute; right: 0; top: 0; background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 50%; cursor: pointer; }
+        h1 { color: var(--primary); font-size: 1.6rem; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .glass { background: var(--card); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .rate-card { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .rate-card.selected { border-color: var(--primary); background: rgba(255, 215, 0, 0.1); }
+        .val { font-size: 1.3rem; font-weight: bold; color: var(--success); display: block; }
+        .label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
+        label { font-size: 0.75rem; color: #ccc; display: block; margin-top: 10px; margin-left: 5px; }
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        input { flex: 1; padding: 14px; margin: 8px 0; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: #252945; color: #fff; font-size: 1.1rem; outline: none; }
+        .clear-btn { background: #ff4d4d; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; height: 52px; width: 52px; display: flex; align-items: center; justify-content: center; }
+        .tasa-input { border: 2px solid var(--primary) !important; color: var(--primary) !important; font-weight: bold; }
+        .toggle-container { display:flex; gap:8px; margin: 10px 0; }
+        .toggle-btn { flex:1; padding:12px; border-radius:8px; border:none; background: #333; color: #fff; font-weight: bold; }
+        .active { background: var(--primary) !important; color: #1a1a2e !important; }
+        .res-box { background: rgba(78, 204, 163, 0.1); padding: 20px; border-radius: 12px; margin-top: 15px; text-align: center; border: 1px dashed var(--success); }
+        .btn-wa { background: #25D366; color: #fff; border: none; width: 100%; padding: 16px; border-radius: 10px; font-weight: bold; margin-top: 15px; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <button class="refresh-btn" onclick="location.reload()">🔄</button>
-    <h1># Epic Converter<br>LUAN Arichuna ⚡</h1>
+<div class="header">
+    <button class="refresh-btn" onclick="loadData()">🔄</button>
+    <h1>Epic Converter<br>LUAN Arichuna ⚡</h1>
+</div>
 
-    <div class="rate-grid">
-        <div class="rate-box" onclick="setRate(this, 61.50)">
-            <span class="rate-label">BCV</span>
-            <span class="rate-value">61.50</span>
-        </div>
-        <div class="rate-box" onclick="setRate(this, 72.40)">
-            <span class="rate-label">Binance</span>
-            <span class="rate-value">72.40</span>
-        </div>
-        <div class="rate-box" onclick="setRate(this, 74.50)">
-            <span class="rate-label">Paralelo</span>
-            <span class="rate-value">74.50</span>
-        </div>
-        <div class="rate-box" onclick="setRate(this, 65.00)">
-            <span class="rate-label">Euro</span>
-            <span class="rate-value">65.00</span>
-        </div>
+<div class="glass">
+    <div class="grid">
+        <div class="rate-card" id="card-BCV" onclick="selectRate('BCV')"><span class="label">BCV</span><span class="val" id="vBCV">0.00</span></div>
+        <div class="rate-card" id="card-BIN" onclick="selectRate('BIN')"><span class="label">Binance</span><span class="val" id="vBIN">0.00</span></div>
+        <div class="rate-card" id="card-PAR" onclick="selectRate('PAR')"><span class="label">Paralelo</span><span class="val" id="vPAR">0.00</span></div>
+        <div class="rate-card" id="card-EUR" onclick="selectRate('EUR')"><span class="label">Euro Real</span><span class="val" id="vEUR">0.00</span></div>
     </div>
+</div>
 
+<div class="glass">
     <div class="toggle-container">
-        <button class="toggle-btn active" onclick="setMode('vendo', this)">Vendo USD</button>
-        <button class="toggle-btn" onclick="setMode('compro', this)">Compro USD</button>
+        <button id="btnV" class="toggle-btn active" onclick="setMode('V')">Vendo USD</button>
+        <button id="btnC" class="toggle-btn" onclick="setMode('C')">Compro USD</button>
     </div>
-
+    
+    <label id="labelMonto">MONTO EN DÓLARES ($)</label>
     <div class="input-group">
-        <label>MONTO EN DÓLARES ($)</label>
-        <input type="number" id="usdAmount" placeholder="0.00" oninput="calculate()">
-        <span onclick="document.getElementById('usdAmount').value='';calculate()" style="position:absolute; right:15px; top:38px; cursor:pointer">🗑️</span>
+        <input type="number" id="monto" placeholder="0.00" inputmode="decimal" oninput="calc()">
+        <button class="clear-btn" onclick="clearCalc()">🗑️</button>
     </div>
-
-    <div class="input-group">
-        <label>TASA DE CAMBIO</label>
-        <input type="number" id="currentRate" placeholder="0.00" oninput="calculate()">
+    
+    <label id="labelTasa">TASA DE CAMBIO</label>
+    <input type="number" id="tasa" class="tasa-input" step="0.01" inputmode="decimal" oninput="manualCheck()">
+    
+    <div id="resBox" class="res-box" style="display:none;">
+        <p id="resLabel" style="font-size: 0.8rem; color: #aaa;">Total a recibir:</p>
+        <h2 id="resTotal" style="color: var(--success); font-size: 2.2rem;">Bs 0.00</h2>
     </div>
-
-    <div class="result-container">
-        <div class="result-label" id="resultLabel">Total a recibir:</div>
-        <div class="result-value">Bs <span id="bsResult">0.00</span></div>
-    </div>
-
-    <button class="share-btn" onclick="shareWhatsApp()">
-        Compartir por WhatsApp
-    </button>
+    <button class="btn-wa" onclick="sendWA()">Compartir por WhatsApp</button>
 </div>
 
 <script>
-    let mode = 'vendo';
+let rates={BCV:0,PAR:0,BIN:0,EUR:0}, mode='V', selectedSource='BIN', manualEdit=false;
 
-    function setRate(element, value) {
-        document.querySelectorAll('.rate-box').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-        document.getElementById('currentRate').value = value;
-        calculate();
-    }
+async function loadData(){
+    try{
+        // 1. Dólar BCV y Paralelo
+        const resDolar = await fetch('https://ve.dolarapi.com/v1/dolares').then(res=>res.json());
+        rates.BCV = resDolar.find(d=>d.fuente==='oficial').promedio;
+        rates.PAR = resDolar.find(d=>d.fuente==='paralelo').promedio;
+        rates.BIN = rates.PAR + 0.15; 
 
-    function setMode(newMode, element) {
-        mode = newMode;
-        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-        document.getElementById('resultLabel').innerText = mode === 'vendo' ? 'Total a recibir:' : 'Total a pagar:';
-        calculate();
-    }
+        // 2. EURO REAL (Sin 1.085, solo valor de API internacional)
+        const resEuro = await fetch('https://open.er-api.com/v6/latest/EUR').then(res=>res.json());
+        if(resEuro.result === "success") {
+            rates.EUR = resEuro.rates.VES; 
+        }
 
-    function calculate() {
-        const usd = parseFloat(document.getElementById('usdAmount').value) || 0;
-        const rate = parseFloat(document.getElementById('currentRate').value) || 0;
-        const result = usd * rate;
-        document.getElementById('bsResult').innerText = result.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+        document.getElementById('vBCV').innerText=rates.BCV.toFixed(2);
+        document.getElementById('vBIN').innerText=rates.BIN.toFixed(2);
+        document.getElementById('vPAR').innerText=rates.PAR.toFixed(2);
+        document.getElementById('vEUR').innerText=rates.EUR.toFixed(2);
+        
+        if(!manualEdit) selectRate(selectedSource);
+    }catch(e){ console.error("Error cargando tasas reales"); }
+}
 
-    function shareWhatsApp() {
-        const usd = document.getElementById('usdAmount').value || "0";
-        const rate = document.getElementById('currentRate').value || "0";
-        const total = document.getElementById('bsResult').innerText;
-        const text = `*LUAN Arichuna - Epic Converter*%0A---%0A*Monto:* ${usd} USD%0A*Tasa:* ${rate} Bs%0A*Total:* Bs ${total}%0A---%0A_Calculado con LUANSystem_`;
-        window.open(`https://wa.me/?text=${text}`, '_blank');
-    }
+function selectRate(s){
+    selectedSource=s; manualEdit=false;
+    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('card-'+s).classList.add('selected');
+    document.getElementById('tasa').value=rates[s].toFixed(2);
+    let moneda = (s === 'EUR') ? 'EURO' : (s === 'BIN') ? 'BIN' : 'USD';
+    let sim = (s === 'EUR') ? '€' : '$';
+    document.getElementById('labelMonto').innerText = `MONTO EN ${moneda} (${sim})`;
+    document.getElementById('labelTasa').innerText = `TASA DE ${s}`;
+    setMode(mode);
+}
 
-    // Registro del Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js');
-      });
-    }
+function manualCheck(){
+    manualEdit=true;
+    selectedSource="MANUAL";
+    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
+    calc();
+}
+
+function setMode(m){
+    mode=m;
+    let mon = (selectedSource === 'EUR') ? 'EURO' : (selectedSource === 'BIN') ? 'BIN' : 'USD';
+    document.getElementById('btnV').innerText = `Vendo ${mon}`;
+    document.getElementById('btnC').innerText = `Compro ${mon}`;
+    document.getElementById('btnV').classList.toggle('active', m==='V');
+    document.getElementById('btnC').classList.toggle('active', m==='C');
+    document.getElementById('resLabel').innerText = m==='V' ? 'Total a recibir:' : 'Total a pagar:';
+    calc();
+}
+
+function clearCalc(){
+    document.getElementById('monto').value='';
+    calc();
+}
+
+function calc(){
+    const m = +document.getElementById('monto').value || 0;
+    const t = +document.getElementById('tasa').value || 0;
+    const res = document.getElementById('resBox');
+    if(m && t){
+        res.style.display='block';
+        document.getElementById('resTotal').innerText = "Bs " + (m*t).toLocaleString('es-VE',{minimumFractionDigits:2});
+    } else res.style.display='none';
+}
+
+function sendWA(){
+    const m = document.getElementById('monto').value;
+    const t = document.getElementById('tasa').value;
+    const tot = document.getElementById('resTotal').innerText;
+    const sim = (selectedSource === 'EUR') ? "€" : "$";
+    const txt = `⚡ *Epic Converter LUAN Arichuna*\n\n*Monto:* ${sim}${m}\n*Tasa:* ${t} Bs\n*Total:* ${tot}\n\n_LUANSystem™ Professional_`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`);
+}
+
+// REGISTRO DE PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js');
+  });
+}
+
+loadData();
 </script>
-
 </body>
 </html>
