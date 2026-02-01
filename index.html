@@ -74,17 +74,31 @@ let rates={BCV:0,PAR:0,BIN:0,EUR:0}, mode='V', selectedSource='BIN', manualEdit=
 
 async function loadData(){
     try{
-        const r=await fetch('https://ve.dolarapi.com/v1/dolares').then(res=>res.json());
-        rates.BCV = r.find(d=>d.fuente==='oficial').promedio;
-        rates.PAR = r.find(d=>d.fuente==='paralelo').promedio;
-        rates.EUR = rates.BCV * 1.085;
-        rates.BIN = rates.PAR + 0.15;
+        // 1. Obtener Dólar BCV y Paralelo
+        const resDolar = await fetch('https://ve.dolarapi.com/v1/dolares').then(res=>res.json());
+        rates.BCV = resDolar.find(d=>d.fuente==='oficial').promedio;
+        rates.PAR = resDolar.find(d=>d.fuente==='paralelo').promedio;
+        rates.BIN = rates.PAR + 0.15; // Mantenemos tu lógica de Binance
+
+        // 2. Obtener Euro Real desde la API sugerida
+        const resEuro = await fetch('https://open.er-api.com/v6/latest/EUR').then(res=>res.json());
+        if(resEuro.result === "success") {
+            rates.EUR = resEuro.rates.VES;
+        } else {
+            // Fallback en caso de error de la API de Euro
+            rates.EUR = rates.BCV * 1.085;
+        }
+
+        // Actualizar UI
         document.getElementById('vBCV').innerText=rates.BCV.toFixed(2);
         document.getElementById('vBIN').innerText=rates.BIN.toFixed(2);
         document.getElementById('vPAR').innerText=rates.PAR.toFixed(2);
         document.getElementById('vEUR').innerText=rates.EUR.toFixed(2);
-        if(!manualEdit) selectRate('BIN');
-    }catch(e){ console.log("Error de red"); }
+        
+        if(!manualEdit) selectRate(selectedSource);
+    }catch(e){ 
+        console.log("Error de red", e); 
+    }
 }
 
 function selectRate(s){
@@ -93,8 +107,9 @@ function selectRate(s){
     document.getElementById('card-'+s).classList.add('selected');
     document.getElementById('tasa').value=rates[s].toFixed(2);
     
-    let moneda = (s === 'EUR') ? 'EUR' : (s === 'BIN') ? 'BIN' : 'USD';
+    let moneda = (s === 'EUR') ? 'EURO' : (s === 'BIN') ? 'BIN' : 'USD';
     let sim = (s === 'EUR') ? '€' : '$';
+    
     document.getElementById('labelMonto').innerText = `MONTO EN ${moneda} (${sim})`;
     document.getElementById('labelTasa').innerText = `TASA DE ${s}`;
     document.getElementById('labelTasa').style.color = "#ccc";
@@ -112,7 +127,7 @@ function manualCheck(){
 
 function setMode(m){
     mode=m;
-    let mon = (selectedSource === 'EUR') ? 'EUR' : (selectedSource === 'BIN') ? 'BIN' : 'USD';
+    let mon = (selectedSource === 'EUR') ? 'EURO' : (selectedSource === 'BIN') ? 'BIN' : 'USD';
     document.getElementById('btnV').innerText = `Vendo ${mon}`;
     document.getElementById('btnC').innerText = `Compro ${mon}`;
     document.getElementById('btnV').classList.toggle('active', m==='V');
@@ -143,7 +158,6 @@ function sendWA(){
     const accion = mode === 'V' ? "Venta" : "Compra";
     const sim = (selectedSource === 'EUR') ? "€" : "$";
     
-    // LOGICA DE CACHE: Consenso vs Mercado
     const handshake = manualEdit ? "🤝" : "📊";
     const titulo = manualEdit ? "Trato Realizado" : "Cotización de Mercado";
     const etiquetaTasa = manualEdit ? "Tasa de Consenso" : "Tasa de " + selectedSource;
