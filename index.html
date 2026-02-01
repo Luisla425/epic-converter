@@ -125,13 +125,11 @@
         window.open(`https://wa.me/?text=${text}`, '_blank');
     }
 
-    // REGISTRO DEL SERVICE WORKER PARA PWA
+    // Registro del Service Worker
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('Service Worker registrado', reg))
-                .catch(err => console.log('Error al registrar SW', err));
-        });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js');
+      });
     }
 </script>
 
