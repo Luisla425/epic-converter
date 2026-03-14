@@ -2,161 +2,433 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Epic Converter LUAN Arichuna ⚡</title>
-    <link rel="manifest" href="manifest.json">
+    
+    <!-- 📱 PWA Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#ffd700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./logo.png">
+    
     <style>
-        :root { --primary: #ffd700; --bg: #1a1a2e; --card: rgba(255,255,255,0.08); --success: #4ecca3; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; padding: 15px; min-height: 100vh; }
+        :root { --primary: #ffd700; --bg: #1a1a2e; --card: rgba(255,255,255,0.08); --success: #4ecca3; --error: #ff6b6b; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; padding: 15px; min-height: 100vh; padding-bottom: 80px; }
+        
+        /* Header */
         .header { text-align: center; margin-bottom: 20px; position: relative; }
-        .refresh-btn { position: absolute; right: 0; top: 0; background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 50%; cursor: pointer; }
-        h1 { color: var(--primary); font-size: 1.6rem; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
-        .glass { background: var(--card); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .rate-card { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .rate-card.selected { border-color: var(--primary); background: rgba(255, 215, 0, 0.1); }
-        .val { font-size: 1.3rem; font-weight: bold; color: var(--success); display: block; }
-        .label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
-        label { font-size: 0.75rem; color: #ccc; display: block; margin-top: 10px; margin-left: 5px; }
+        .refresh-btn { position: absolute; right: 0; top: 0; background: var(--card); border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
+        .refresh-btn:active { transform: rotate(180deg); }
+        .refresh-btn.loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+        
+        h1 { color: var(--primary); font-size: 1.6rem; text-shadow: 0 0 15px rgba(255,215,0,0.4); line-height: 1.3; }
+        .subtitle { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+        
+        /* Glass cards */
+        .glass { background: var(--card); backdrop-filter: blur(12px); border-radius: 16px; padding: 16px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        
+        /* Rates grid */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .rate-card { background: rgba(0,0,0,0.25); padding: 14px 10px; border-radius: 14px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease; }
+        .rate-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .rate-card.selected { border-color: var(--primary); background: rgba(255, 215, 0, 0.15); box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+        .rate-card .val { font-size: 1.25rem; font-weight: 700; color: var(--success); display: block; margin-top: 4px; }
+        .rate-card .label { font-size: 0.65rem; color: #bbb; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Inputs */
+        label { font-size: 0.75rem; color: var(--primary); display: block; margin: 12px 0 6px 5px; font-weight: 600; }
         .input-group { display: flex; gap: 8px; align-items: center; }
-        input { flex: 1; padding: 14px; margin: 8px 0; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: #252945; color: #fff; font-size: 1.1rem; outline: none; }
-        .clear-btn { background: #ff4d4d; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; height: 52px; width: 52px; display: flex; align-items: center; justify-content: center; }
-        .tasa-input { border: 2px solid var(--primary) !important; color: var(--primary) !important; font-weight: bold; }
-        .toggle-container { display:flex; gap:8px; margin: 10px 0; }
-        .toggle-btn { flex:1; padding:12px; border-radius:8px; border:none; background: #333; color: #fff; font-weight: bold; }
-        .active { background: var(--primary) !important; color: #1a1a2e !important; }
-        .res-box { background: rgba(78, 204, 163, 0.1); padding: 20px; border-radius: 12px; margin-top: 15px; text-align: center; border: 1px dashed var(--success); }
-        .btn-wa { background: #25D366; color: #fff; border: none; width: 100%; padding: 16px; border-radius: 10px; font-weight: bold; margin-top: 15px; font-size: 1rem; }
+        input { flex: 1; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.15); background: #252945; color: #fff; font-size: 1.1rem; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: var(--primary); }
+        input::placeholder { color: #666; }
+        .clear-btn { background: var(--error); color: white; border: none; padding: 0; border-radius: 12px; font-weight: bold; height: 50px; width: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: background 0.2s; }
+        .clear-btn:active { background: #ff5252; }
+        .tasa-input { border: 2px solid var(--primary) !important; color: var(--primary) !important; font-weight: 600; }
+        
+        /* Toggle buttons */
+        .toggle-container { display:flex; gap:8px; margin: 8px 0 15px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 10px; }
+        .toggle-btn { flex:1; padding:12px; border-radius:8px; border:none; background: transparent; color: #ccc; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .toggle-btn.active { background: var(--primary); color: #1a1a2e; box-shadow: 0 2px 10px rgba(255,215,0,0.3); }
+        
+        /* Result box */
+        .res-box { background: linear-gradient(135deg, rgba(78, 204, 163, 0.15), rgba(78, 204, 163, 0.05)); padding: 20px; border-radius: 14px; margin-top: 18px; text-align: center; border: 1px solid var(--success); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .res-box .res-label { font-size: 0.8rem; color: #bbb; margin-bottom: 8px; }
+        .res-box .res-total { color: var(--success); font-size: 2.3rem; font-weight: 700; text-shadow: 0 0 10px rgba(78,204,163,0.3); }
+        
+        /* WhatsApp button */
+        .btn-wa { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; margin-top: 18px; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(37,211,102,0.3); }
+        .btn-wa:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(37,211,102,0.2); }
+        
+        /* Toast notification */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; background: #333; color: #fff; font-size: 0.9rem; font-weight: 500; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+        
+        /* Loading state */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        
+        /* Offline badge */
+        .offline-badge { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: var(--error); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: none; z-index: 1000; }
+        .offline-badge.show { display: flex; align-items: center; gap: 6px; }
+        
+        /* Responsive */
+        @media (min-width: 480px) {
+            .grid { grid-template-columns: repeat(4, 1fr); }
+            h1 { font-size: 1.8rem; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Offline indicator -->
+<div class="offline-badge" id="offlineBadge">📴 Sin conexión</div>
+
 <div class="header">
-    <button class="refresh-btn" onclick="loadData()">🔄</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData(true)" aria-label="Actualizar tasas">🔄</button>
     <h1>Epic Converter<br>LUAN Arichuna ⚡</h1>
+    <div class="subtitle" id="lastUpdate">Actualizado: --:--</div>
 </div>
 
 <div class="glass">
+    <h3 style="font-size:0.8rem;color:#ccc;margin-bottom:8px;">📊 SELECCIONA TU REFERENCIA</h3>
     <div class="grid">
-        <div class="rate-card" id="card-BCV" onclick="selectRate('BCV')"><span class="label">BCV</span><span class="val" id="vBCV">0.00</span></div>
-        <div class="rate-card" id="card-BIN" onclick="selectRate('BIN')"><span class="label">Binance</span><span class="val" id="vBIN">0.00</span></div>
-        <div class="rate-card" id="card-PAR" onclick="selectRate('PAR')"><span class="label">Paralelo</span><span class="val" id="vPAR">0.00</span></div>
-        <div class="rate-card" id="card-EUR" onclick="selectRate('EUR')"><span class="label">Euro Real</span><span class="val" id="vEUR">0.00</span></div>
+        <div class="rate-card" id="card-BCV" onclick="selectRate('BCV')" role="button" tabindex="0">
+            <span class="label">🏦 BCV</span>
+            <span class="val skeleton" id="vBCV">--</span>
+        </div>
+        <div class="rate-card" id="card-BIN" onclick="selectRate('BIN')" role="button" tabindex="0">
+            <span class="label">🟡 Binance</span>
+            <span class="val skeleton" id="vBIN">--</span>
+        </div>
+        <div class="rate-card" id="card-PAR" onclick="selectRate('PAR')" role="button" tabindex="0">
+            <span class="label">💹 Paralelo</span>
+            <span class="val skeleton" id="vPAR">--</span>
+        </div>
+        <div class="rate-card" id="card-EUR" onclick="selectRate('EUR')" role="button" tabindex="0">
+            <span class="label">🇪🇺 Euro</span>
+            <span class="val skeleton" id="vEUR">--</span>
+        </div>
     </div>
 </div>
 
 <div class="glass">
-    <div class="toggle-container">
-        <button id="btnV" class="toggle-btn active" onclick="setMode('V')">Vendo USD</button>
-        <button id="btnC" class="toggle-btn" onclick="setMode('C')">Compro USD</button>
+    <div class="toggle-container" role="tablist">
+        <button id="btnV" class="toggle-btn active" onclick="setMode('V')" role="tab" aria-selected="true">Vendo USD</button>
+        <button id="btnC" class="toggle-btn" onclick="setMode('C')" role="tab" aria-selected="false">Compro USD</button>
     </div>
     
     <label id="labelMonto">MONTO EN DÓLARES ($)</label>
     <div class="input-group">
-        <input type="number" id="monto" placeholder="0.00" inputmode="decimal" oninput="calc()">
-        <button class="clear-btn" onclick="clearCalc()">🗑️</button>
+        <input type="number" id="monto" placeholder="0.00" inputmode="decimal" aria-label="Monto a convertir">
+        <button class="clear-btn" onclick="clearCalc()" aria-label="Limpiar">🗑️</button>
     </div>
     
     <label id="labelTasa">TASA DE CAMBIO</label>
-    <input type="number" id="tasa" class="tasa-input" step="0.01" inputmode="decimal" oninput="manualCheck()">
+    <input type="number" id="tasa" class="tasa-input" step="0.01" inputmode="decimal" aria-label="Tasa de cambio">
     
-    <div id="resBox" class="res-box" style="display:none;">
-        <p id="resLabel" style="font-size: 0.8rem; color: #aaa;">Total a recibir:</p>
-        <h2 id="resTotal" style="color: var(--success); font-size: 2.2rem;">Bs 0.00</h2>
+    <div id="resBox" class="res-box" style="display:none;" aria-live="polite">
+        <p class="res-label" id="resLabel">Total a recibir:</p>
+        <h2 class="res-total" id="resTotal">Bs 0,00</h2>
     </div>
-    <button class="btn-wa" onclick="sendWA()">Compartir por WhatsApp</button>
+    
+    <button class="btn-wa" onclick="sendWA()">
+        <span>📱</span> Compartir por WhatsApp
+    </button>
 </div>
 
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
 <script>
-let rates={BCV:0,PAR:0,BIN:0,EUR:0}, mode='V', selectedSource='BIN', manualEdit=false;
+// 🧠 ESTADO GLOBAL
+let rates = { BCV: 0, PAR: 0, BIN: 0, EUR: 0 };
+let mode = 'V'; // 'V' = Vendo, 'C' = Compro
+let selectedSource = 'BIN';
+let manualEdit = false;
+let lastFetchTime = null;
 
-async function loadData(){
-    try{
-        // 1. Dólar BCV y Paralelo
-        const resDolar = await fetch('https://ve.dolarapi.com/v1/dolares').then(res=>res.json());
-        rates.BCV = resDolar.find(d=>d.fuente==='oficial').promedio;
-        rates.PAR = resDolar.find(d=>d.fuente==='paralelo').promedio;
-        rates.BIN = rates.PAR + 0.15; 
+// 🎯 ELEMENTOS DEL DOM (cacheados para rendimiento)
+const els = {
+    monto: document.getElementById('monto'),
+    tasa: document.getElementById('tasa'),
+    resBox: document.getElementById('resBox'),
+    resTotal: document.getElementById('resTotal'),
+    resLabel: document.getElementById('resLabel'),
+    labelMonto: document.getElementById('labelMonto'),
+    labelTasa: document.getElementById('labelTasa'),
+    refreshBtn: document.getElementById('refreshBtn'),
+    lastUpdate: document.getElementById('lastUpdate'),
+    offlineBadge: document.getElementById('offlineBadge')
+};
 
-        // 2. EURO REAL (Sin 1.085, solo valor de API internacional)
-        const resEuro = await fetch('https://open.er-api.com/v6/latest/EUR').then(res=>res.json());
-        if(resEuro.result === "success") {
-            rates.EUR = resEuro.rates.VES; 
+// 🔔 Sistema de notificaciones toast
+function toast(msg, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    container.appendChild(t);
+    setTimeout(() => t.remove(), duration);
+}
+
+// 🌐 Detectar conexión
+function updateOnlineStatus() {
+    els.offlineBadge.classList.toggle('show', !navigator.onLine);
+    if (navigator.onLine) toast('✅ Conectado', 'success', 2000);
+    else toast('📴 Modo offline activado', 'error', 4000);
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// 🔄 Cargar tasas (con manejo de errores robusto)
+async function loadData(force = false) {
+    els.refreshBtn.classList.add('loading');
+    
+    try {
+        // 1. Dólar BCV y Paralelo (URL corregida ✅)
+        const resDolar = await fetch('https://ve.dolarapi.com/v1/dolares');
+        if (!resDolar.ok) throw new Error('Error en API Dólar');
+        const data = await resDolar.json();
+        
+        rates.BCV = parseFloat(data.find(d => d.fuente === 'oficial')?.promedio || 0);
+        rates.PAR = parseFloat(data.find(d => d.fuente === 'paralelo')?.promedio || 0);
+        rates.BIN = rates.PAR > 0 ? rates.PAR + 0.15 : 0; // Binance = Paralelo + spread
+
+        // 2. Euro Real (URL corregida ✅)
+        const resEuro = await fetch('https://open.er-api.com/v6/latest/EUR');
+        if (resEuro.ok) {
+            const euroData = await resEuro.json();
+            if (euroData.result === 'success') {
+                rates.EUR = parseFloat(euroData.rates.VES || 0);
+            }
         }
 
-        document.getElementById('vBCV').innerText=rates.BCV.toFixed(2);
-        document.getElementById('vBIN').innerText=rates.BIN.toFixed(2);
-        document.getElementById('vPAR').innerText=rates.PAR.toFixed(2);
-        document.getElementById('vEUR').innerText=rates.EUR.toFixed(2);
+        // Actualizar UI
+        updateRatesUI();
+        lastFetchTime = new Date();
+        updateLastUpdateTime();
         
-        if(!manualEdit) selectRate(selectedSource);
-    }catch(e){ console.error("Error cargando tasas reales"); }
+        if (!manualEdit) selectRate(selectedSource);
+        if (!force) toast('✅ Tasas actualizadas', 'success', 2000);
+        
+    } catch (error) {
+        console.error('❌ Error cargando tasas:', error);
+        toast('⚠️ Usando tasas guardadas (offline)', 'error', 4000);
+        // Intenta usar valores cacheados si existen
+        if (localStorage.getItem('luan_rates')) {
+            rates = JSON.parse(localStorage.getItem('luan_rates'));
+            updateRatesUI();
+            if (!manualEdit) selectRate(selectedSource);
+        }
+    } finally {
+        els.refreshBtn.classList.remove('loading');
+    }
 }
 
-function selectRate(s){
-    selectedSource=s; manualEdit=false;
-    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
-    document.getElementById('card-'+s).classList.add('selected');
-    document.getElementById('tasa').value=rates[s].toFixed(2);
-    let moneda = (s === 'EUR') ? 'EURO' : (s === 'BIN') ? 'BIN' : 'USD';
-    let sim = (s === 'EUR') ? '€' : '$';
-    document.getElementById('labelMonto').innerText = `MONTO EN ${moneda} (${sim})`;
-    document.getElementById('labelTasa').innerText = `TASA DE ${s}`;
-    setMode(mode);
+// 🎨 Actualizar UI de tasas
+function updateRatesUI() {
+    const sources = ['BCV', 'BIN', 'PAR', 'EUR'];
+    sources.forEach(src => {
+        const el = document.getElementById(`v${src}`);
+        if (el && rates[src] > 0) {
+            el.textContent = rates[src].toFixed(2);
+            el.classList.remove('skeleton');
+        }
+    });
+    // Guardar en localStorage para offline
+    localStorage.setItem('luan_rates', JSON.stringify(rates));
 }
 
-function manualCheck(){
-    manualEdit=true;
-    selectedSource="MANUAL";
-    document.querySelectorAll('.rate-card').forEach(c=>c.classList.remove('selected'));
+// 🕐 Actualizar timestamp
+function updateLastUpdateTime() {
+    if (lastFetchTime) {
+        const time = lastFetchTime.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+        els.lastUpdate.textContent = `Actualizado: ${time}`;
+    }
+}
+
+// 🎯 Seleccionar fuente de tasa
+function selectRate(source) {
+    selectedSource = source;
+    manualEdit = false;
+    
+    // UI selection
+    document.querySelectorAll('.rate-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById(`card-${source}`).classList.add('selected');
+    
+    // Auto-llenar tasa
+    if (rates[source] > 0) {
+        els.tasa.value = rates[source].toFixed(2);
+    }
+    
+    // Actualizar labels según moneda
+    updateLabels();
     calc();
 }
 
-function setMode(m){
-    mode=m;
-    let mon = (selectedSource === 'EUR') ? 'EURO' : (selectedSource === 'BIN') ? 'BIN' : 'USD';
-    document.getElementById('btnV').innerText = `Vendo ${mon}`;
-    document.getElementById('btnC').innerText = `Compro ${mon}`;
-    document.getElementById('btnV').classList.toggle('active', m==='V');
-    document.getElementById('btnC').classList.toggle('active', m==='C');
-    document.getElementById('resLabel').innerText = m==='V' ? 'Total a recibir:' : 'Total a pagar:';
+// ✏️ Detectar edición manual de tasa
+function manualCheck() {
+    manualEdit = true;
+    selectedSource = 'MANUAL';
+    document.querySelectorAll('.rate-card').forEach(c => c.classList.remove('selected'));
     calc();
 }
 
-function clearCalc(){
-    document.getElementById('monto').value='';
+// 🔄 Cambiar modo (Vendo/Compro)
+function setMode(m) {
+    mode = m;
+    
+    // UI toggle
+    document.getElementById('btnV').classList.toggle('active', m === 'V');
+    document.getElementById('btnC').classList.toggle('active', m === 'C');
+    document.getElementById('btnV').setAttribute('aria-selected', m === 'V');
+    document.getElementById('btnC').setAttribute('aria-selected', m === 'C');
+    
+    updateLabels();
     calc();
 }
 
-function calc(){
-    const m = +document.getElementById('monto').value || 0;
-    const t = +document.getElementById('tasa').value || 0;
-    const res = document.getElementById('resBox');
-    if(m && t){
-        res.style.display='block';
-        document.getElementById('resTotal').innerText = "Bs " + (m*t).toLocaleString('es-VE',{minimumFractionDigits:2});
-    } else res.style.display='none';
+// 🏷️ Actualizar labels dinámicos
+function updateLabels() {
+    const isEUR = selectedSource === 'EUR';
+    const isBIN = selectedSource === 'BIN';
+    const moneda = isEUR ? 'EURO' : isBIN ? 'USDT' : 'DÓLARES';
+    const simbolo = isEUR ? '€' : '$';
+    
+    if (mode === 'V') {
+        els.labelMonto.textContent = `MONTO EN ${moneda} (${simbolo})`;
+        els.resLabel.textContent = 'Total a recibir en Bs:';
+    } else {
+        els.labelMonto.textContent = 'MONTO EN BOLÍVARES (Bs)';
+        els.resLabel.textContent = `${moneda} a recibir:`;
+    }
+    
+    const fuenteLabel = {
+        'BCV': 'Tasa BCV (Oficial)',
+        'BIN': 'Tasa Binance P2P',
+        'PAR': 'Tasa Paralelo',
+        'EUR': 'Tasa Euro Internacional',
+        'MANUAL': 'Tasa Personalizada'
+    };
+    els.labelTasa.textContent = fuenteLabel[selectedSource] || 'Tasa de Cambio';
 }
 
-function sendWA(){
-    const m = document.getElementById('monto').value;
-    const t = document.getElementById('tasa').value;
-    const tot = document.getElementById('resTotal').innerText;
-    const sim = (selectedSource === 'EUR') ? "€" : "$";
-    const txt = `⚡ *Epic Converter LUAN Arichuna*\n\n*Monto:* ${sim}${m}\n*Tasa:* ${t} Bs\n*Total:* ${tot}\n\n_LUANSystem™ Professional_`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`);
+// 🧮 Calcular resultado (CORREGIDO ✅)
+function calc() {
+    const monto = parseFloat(els.monto.value) || 0;
+    const tasa = parseFloat(els.tasa.value) || 0;
+    
+    if (monto > 0 && tasa > 0) {
+        let resultado;
+        if (mode === 'V') {
+            // Vendo divisa → Recibo Bs: monto * tasa
+            resultado = monto * tasa;
+            els.resTotal.textContent = `Bs ${resultado.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        } else {
+            // Compro divisa → Pago Bs, recibo divisa: monto / tasa
+            resultado = monto / tasa;
+            const simbolo = selectedSource === 'EUR' ? '€' : '$';
+            els.resTotal.textContent = `${resultado.toFixed(2)} ${simbolo}`;
+        }
+        els.resBox.style.display = 'block';
+    } else {
+        els.resBox.style.display = 'none';
+    }
 }
 
-// REGISTRO DE PWA
+// 🗑️ Limpiar cálculo
+function clearCalc() {
+    els.monto.value = '';
+    els.resBox.style.display = 'none';
+    els.monto.focus();
+    toast('🧹 Limpiado', 'info', 1500);
+}
+
+// 📱 Enviar a WhatsApp (mejorado)
+function sendWA() {
+    const monto = els.monto.value.trim();
+    const tasa = els.tasa.value.trim();
+    const total = els.resTotal.textContent.trim();
+    
+    if (!monto || !tasa) {
+        toast('⚠️ Ingresa monto y tasa primero', 'error');
+        return;
+    }
+    
+    const isEUR = selectedSource === 'EUR';
+    const simbolo = isEUR ? '€' : '$';
+    const moneda = isEUR ? 'EURO' : (selectedSource === 'BIN' ? 'USDT' : 'USD');
+    const operacion = mode === 'V' ? 'VENTA' : 'COMPRA';
+    
+    const mensaje = `⚡ *Epic Converter LUAN Arichuna* ⚡
+
+🤝 *Operación:* ${operacion} de ${moneda}
+💰 *Monto:* ${simbolo}${monto}
+📊 *Tasa:* ${tasa} Bs/${moneda}
+✅ *Total:* ${total}
+
+🕐 ${new Date().toLocaleString('es-VE')}
+_LUANSystem™ Professional_`;
+
+    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, '_blank');
+    toast('📤 Abriendo WhatsApp...', 'success', 2000);
+}
+
+// ⌨️ Event listeners optimizados
+els.monto.addEventListener('input', calc);
+els.tasa.addEventListener('input', () => { manualCheck(); calc(); });
+
+// 🎹 Accesibilidad: Enter en inputs
+[els.monto, els.tasa].forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            calc();
+            input.blur();
+        }
+    });
+});
+
+// 🔄 Registro de Service Worker (con actualización)
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js');
-  });
+    window.addEventListener('load', async () => {
+        try {
+            const registration = await navigator.serviceWorker.register('./service-worker.js');
+            console.log('✅ SW registrado:', registration.scope);
+            
+            // Detectar nueva versión disponible
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        toast('🔄 Nueva versión disponible. Recarga para actualizar.', 'info', 5000);
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('❌ Error registrando SW:', err);
+        }
+    });
 }
 
-loadData();
+// 🚀 Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    // Auto-refresh cada 5 minutos si está en foreground
+    setInterval(() => {
+        if (document.visibilityState === 'visible' && navigator.onLine) {
+            loadData();
+        }
+    }, 5 * 60 * 1000);
+});
 </script>
 </body>
 </html>
