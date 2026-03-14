@@ -1,37 +1,34 @@
-const CACHE_NAME = 'epic-converter-v5';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './logo.png'
-];
-
-// Instalación: Guarda los archivos nuevos
-self.addEventListener('install', e => {
-  self.skipWaiting(); 
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    })
-  );
-});
-
-// Activación: Borra la caché vieja (v1, v2, etc.)
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
-  );
-});
-
-// Estrategia: Carga desde caché pero busca red para los precios
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
-    })
-  );
-});
+{
+  "name": "Epic Converter LUAN Arichuna ⚡",
+  "short_name": "LUAN Converter",
+  "description": "Convertidor de divisas venezolano con tasas BCV, Binance, Paralelo y Euro. Funciona offline.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ffd700",
+  "orientation": "portrait-primary",
+  "lang": "es-VE",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/ffd700/1a1a2e?text=LUAN",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512/ffd700/1a1a2e?text=LUAN",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://via.placeholder.com/800x600/1a1a2e/ffd700?text=Epic+Converter",
+      "sizes": "800x600",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
