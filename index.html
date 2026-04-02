@@ -1,1 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Epic Converter LUAN ARICHUNA ⚡</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ffd700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./logo.png">
+    
+    <style>
+        :root { 
+            --primary: #ffd700; 
+            --bg: #1a1a2e; 
+            --card: rgba(255,255,255,0.08); 
+            --success: #4ecca3; 
+            --warning: #ffa500;
+            --up: #4ecca3;
+            --down: #ff6b6b;
+        }
+        
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { 
+            background: var(--bg); 
+            color: #fff; 
+            padding: 15px; 
+            min-height: 100vh; 
+        }
+        
+        /* ===== HEADER ===== */
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            position: relative; 
+        }
+        .refresh-btn { 
+            position: absolute; 
+            right: 0; 
+            top: 0; 
+            background: var(--card); 
+            border: 1px solid var(--primary); 
+            color: var(--primary); 
+            padding: 10px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .refresh-btn:active { transform: rotate(180deg); }
+        .refresh-btn.loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+        
+        h1 { 
+            color: var(--primary); 
+            font-size: 1.5rem; 
+            text-shadow: 0 0 10px rgba(255,215,0,0.3); 
+            line-height: 1.3;
+        }
+        
+        /* ===== GLASS CARDS ===== */
+        .glass { 
+            background: var(--card); 
+            backdrop-filter: blur(10px); 
+            border-radius: 15px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        
+        /* ===== GRID DE TASAS ===== */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+        .rate-card { 
+            background: rgba(0,0,0,0.2); 
+            padding: 12px; 
+            border-radius: 12px; 
+            text-align: center; 
+            cursor: pointer; 
+            border: 2px solid transparent; 
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .rate-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .rate-card.selected { 
+            border-color: var(--primary); 
+            background: rgba(255, 215, 0, 0.1); 
+            box-shadow: 0 0 12px rgba(255,215,0,0.2);
+        }
+        .val { 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            color: var(--success); 
+            display: block; 
+        }
+        .label { 
+            font-size: 0.7rem; 
+            color: #aaa; 
+            text-transform: uppercase;
+        }
 
+        /* ===== MEJORA 5: Indicador ▲▼ ===== */
+        .trend {
+            font-size: 0.65rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 2px;
+            height: 14px;
+        }
+        .trend.up   { color: var(--up); }
+        .trend.down { color: var(--down); }
+        .trend.flat { color: #666; }
+        
+        /* ===== INPUTS ===== */
+        label { 
+            font-size: 0.75rem; 
+            color: var(--primary); 
+            display: block; 
+            margin-top: 12px; 
+            font-weight: bold; 
+        }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 5px 0; 
+            border-radius: 10px; 
+            border: 2px solid rgba(255,255,255,0.1); 
+            background: #252945; 
+            color: #fff; 
+            font-size: 1.1rem; 
+            outline: none; 
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--primary); }
+        input::placeholder { color: #666; }
+        .tasa-input { 
+            border: 2px solid var(--primary) !important; 
+            color: var(--primary) !important; 
+            font-weight: bold;
+        }
+
+        /* ===== MEJORA 4: Botón "Usar tasa oficial" ===== */
+        .btn-usar-oficial {
+            background: rgba(255,215,0,0.12);
+            border: 1px solid rgba(255,215,0,0.4);
+            color: var(--primary);
+            font-size: 0.72rem;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 4px;
+            display: none; /* Solo visible en modo CON */
+            transition: background 0.2s;
+        }
+        .btn-usar-oficial:active { background: rgba(255,215,0,0.25); }
+        
+        /* ===== TOGGLE BUTTONS ===== */
+        .toggle-container { 
+            display:flex; 
+            gap:8px; 
+            margin: 15px 0; 
+        }
+        .toggle-btn { 
+            flex:1; 
+            padding:12px; 
+            border-radius:8px; 
+            border:none; 
+            background: #333; 
+            color: #fff; 
+            font-weight: bold; 
+            font-size: 0.8rem; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn:active { transform: scale(0.98); }
+        .active { 
+            background: var(--primary) !important; 
+            color: #1a1a2e !important; 
+        }
+        
+        /* ===== RESULTADO ===== */
+        .res-box { 
+            background: rgba(78, 204, 163, 0.1); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-top: 15px; 
+            text-align: center; 
+            border: 1px dashed var(--success); 
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .res-box .res-label { 
+            font-size: 0.8rem; 
+            color: #aaa; 
+            margin-bottom: 5px;
+        }
+        .res-box .res-total { 
+            color: var(--success); 
+            font-size: 1.8rem; 
+            font-weight: bold;
+        }
+        
+        /* ===== WHATSAPP BUTTON ===== */
+        .btn-wa { 
+            background: #25D366; 
+            color: #fff; 
+            border: none; 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-wa:active { background: #128C7E; }
+        
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 50px;
+            background: #333;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+        .toast.success { background: var(--success); color: #1a1a2e; }
+        .toast.error { background: var(--warning); color: #1a1a2e; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <button class="refresh-btn" id="refreshBtn" onclick="loadData()" aria-label="Actualizar tasas">🔄</button>
+        <h1>Epic Converter LUAN ⚡</h1>
+        <div style="font-size:0.7rem;color:#aaa;margin-top:5px;" id="lastUpdate">Actualizado: --:--</div>
+    </div>
+
+    <!-- SECCIÓN 1: SELECCIONA REFERENCIA -->
+    <div class="glass">
+        <h3 style="font-size: 0.8rem;margin-bottom:8px;">1. SELECCIONA REFERENCIA</h3>
+        <div class="grid">
+            <div class="rate-card selected" id="card-USD" onclick="selectCurrency('USD', 'Dólares')" role="button" tabindex="0">
+                <span class="label">🏦 BCV ($)</span>
+                <span class="val" id="vUSD">--</span>
+                <!-- MEJORA 5: indicador tendencia -->
+                <span class="trend flat" id="tUSD"></span>
+            </div>
+            <div class="rate-card" id="card-EUR" onclick="selectCurrency('EUR', 'Euros')" role="button" tabindex="0">
+                <span class="label">🇪🇺 EURO Real (€)</span>
+                <span class="val" id="vEUR">--</span>
+                <span class="trend flat" id="tEUR"></span>
+            </div>
+            <!-- FIX 1: Binance con su propia API real -->
+            <div class="rate-card" id="card-BIN" onclick="selectCurrency('BIN', 'USDT')" role="button" tabindex="0">
+                <span class="label">🟡 BINANCE (₮)</span>
+                <span class="val" id="vBIN">--</span>
+                <span class="trend flat" id="tBIN"></span>
+            </div>
+            <div class="rate-card" id="card-CON" onclick="selectCurrency('CON', 'Acuerdo')" role="button" tabindex="0">
+                <span class="label">🤝 PERSONALIZADO</span>
+                <span class="val">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: OPERACIÓN -->
+    <div class="glass">
+        <h3 style="font-size: 0.8rem;margin-bottom:8px;">2. ¿QUÉ OPERACIÓN HARÁS?</h3>
+        <div class="toggle-container" role="tablist">
+            <button id="btnDivisaABs" class="toggle-btn active" onclick="setDirection('DivisaABs')" role="tab" aria-selected="true">
+                <span id="txtDivisaABs">De Dólares a Bs</span>
+            </button>
+            <button id="btnBsADivisa" class="toggle-btn" onclick="setDirection('BsADivisa')" role="tab" aria-selected="false">
+                <span id="txtBsADivisa">De Bs a Dólares</span>
+            </button>
+        </div>
+
+        <label id="labelMonto">MONTO EN DÓLARES</label>
+        <input type="number" id="monto" placeholder="0.00" inputmode="decimal" aria-label="Monto a convertir">
+        
+        <label id="labelTasa">TASA ACORDADA (Negocia tu precio)</label>
+        <input type="number" id="tasa" class="tasa-input" step="0.01" inputmode="decimal" aria-label="Tasa negociada">
+
+        <!-- MEJORA 4: Botón "Usar tasa oficial" visible solo en modo CON -->
+        <button class="btn-usar-oficial" id="btnUsarOficial" onclick="usarTasaOficial()">
+            ← Usar tasa BCV como base
+        </button>
+        
+        <div id="resBox" class="res-box" style="display:none;" aria-live="polite">
+            <p class="res-label" id="resLabel">Resultado:</p>
+            <h2 class="res-total" id="resTotal">0.00</h2>
+        </div>
+
+        <button class="btn-wa" onclick="sendWA()">📩 Enviar a WhatsApp</button>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script>
+        // ========================================
+        // 🧠 ESTADO GLOBAL
+        // ========================================
+        let rates     = { USD: 0, EUR: 0, BIN: 0 };
+        let prevRates = { USD: 0, EUR: 0, BIN: 0 }; // MEJORA 5: guardar prev para tendencia
+        let currentCurrency = 'Dólares';
+        let currentCode     = 'USD';
+        let direction       = 'DivisaABs';
+        let lastFetchTime   = null;
+
+        // ========================================
+        // 🎯 ELEMENTOS DOM CACHEADOS
+        // ========================================
+        const els = {
+            monto:      document.getElementById('monto'),
+            tasa:       document.getElementById('tasa'),
+            resBox:     document.getElementById('resBox'),
+            resTotal:   document.getElementById('resTotal'),
+            resLabel:   document.getElementById('resLabel'),
+            labelMonto: document.getElementById('labelMonto'),
+            labelTasa:  document.getElementById('labelTasa'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            lastUpdate: document.getElementById('lastUpdate'),
+            btnUsarOficial: document.getElementById('btnUsarOficial') // MEJORA 4
+        };
+
+        // ========================================
+        // 🔔 TOAST
+        // ========================================
+        function toast(msg, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), duration);
+        }
+
+        // ========================================
+        // 🔄 CARGAR TASAS — FIX 1 + FIX 3
+        // ========================================
+        async function loadData() {
+            els.refreshBtn.classList.add('loading');
+
+            // MEJORA 5: guardar las tasas anteriores ANTES de actualizar
+            prevRates = { ...rates };
+
+            try {
+                // 1️⃣ BCV oficial desde DolarAPI Venezuela
+                const resp = await fetch('https://ve.dolarapi.com/v1/dolares');
+                if (!resp.ok) throw new Error('Error en API Dólar');
+                const data = await resp.json();
+                rates.USD = parseFloat(data.find(d => d.fuente === 'oficial')?.promedio || 0);
+
+                // 2️⃣ Euro desde API internacional
+                const resEuro = await fetch('https://open.er-api.com/v6/latest/EUR');
+                if (resEuro.ok) {
+                    const euroData = await resEuro.json();
+                    if (euroData.result === 'success') {
+                        rates.EUR = parseFloat(euroData.rates.VES || 0);
+                    }
+                }
+
+                // ✅ FIX 1: Binance real desde criptoya.com (no el paralelo)
+                try {
+                    const resBin = await fetch('https://criptoya.com/api/binance/usdt/ves/1');
+                    if (resBin.ok) {
+                        const binData = await resBin.json();
+                        // criptoya devuelve ask/bid/totalAsk/totalBid
+                        const binRate = parseFloat(binData.ask || binData.totalAsk || 0);
+                        if (binRate > 0) rates.BIN = binRate;
+                    }
+                } catch(binErr) {
+                    // Si Binance falla, usar paralelo como fallback degradado
+                    const par = parseFloat(data.find(d => d.fuente === 'paralelo')?.promedio || 0);
+                    if (par > 0) rates.BIN = par;
+                    toast('⚠️ Binance: usando paralelo como referencia', 'error', 3000);
+                }
+
+                // Actualizar UI
+                document.getElementById('vUSD').innerText = rates.USD > 0 ? rates.USD.toFixed(2) : '--';
+                document.getElementById('vEUR').innerText = rates.EUR > 0 ? rates.EUR.toFixed(2) : '--';
+                document.getElementById('vBIN').innerText = rates.BIN > 0 ? rates.BIN.toFixed(2) : '--';
+
+                // MEJORA 5: mostrar tendencia ▲▼
+                updateTrend('USD');
+                updateTrend('EUR');
+                updateTrend('BIN');
+
+                lastFetchTime = new Date();
+                updateLastUpdateTime();
+
+                // Auto-llenar tasa si está vacía
+                if (els.tasa.value === '' && currentCode !== 'CON') {
+                    els.tasa.value = rates[currentCode]?.toFixed(2) || rates.USD.toFixed(2);
+                }
+
+                // ✅ FIX 3: Guardar en localStorage SOLO después de fetch exitoso
+                localStorage.setItem('luan_rates', JSON.stringify(rates));
+
+                calc();
+                toast('✅ Tasas actualizadas', 'success', 2000);
+
+            } catch (e) {
+                console.error('❌ Error cargando tasas:', e);
+                toast('⚠️ Usando último valor guardado', 'error', 4000);
+
+                // Fallback offline desde localStorage
+                const saved = localStorage.getItem('luan_rates');
+                if (saved) {
+                    rates = JSON.parse(saved);
+                    document.getElementById('vUSD').innerText = rates.USD > 0 ? rates.USD.toFixed(2) : '--';
+                    document.getElementById('vEUR').innerText = rates.EUR > 0 ? rates.EUR.toFixed(2) : '--';
+                    document.getElementById('vBIN').innerText = rates.BIN > 0 ? rates.BIN.toFixed(2) : '--';
+                }
+            } finally {
+                els.refreshBtn.classList.remove('loading');
+            }
+        }
+
+        // ========================================
+        // MEJORA 5: Indicador de tendencia ▲▼
+        // ========================================
+        function updateTrend(code) {
+            const el = document.getElementById('t' + code);
+            if (!el) return;
+            const prev = prevRates[code];
+            const curr = rates[code];
+            if (!prev || prev === 0) { el.className = 'trend flat'; el.innerText = ''; return; }
+            const diff = curr - prev;
+            if (Math.abs(diff) < 0.01) {
+                el.className = 'trend flat';
+                el.innerText = '';
+            } else if (diff > 0) {
+                el.className = 'trend up';
+                el.innerText = `▲ +${diff.toFixed(2)}`;
+            } else {
+                el.className = 'trend down';
+                el.innerText = `▼ ${diff.toFixed(2)}`;
+            }
+        }
+
+        // ========================================
+        // 🎯 SELECCIONAR MONEDA/REFERENCIA
+        // ========================================
+        function selectCurrency(code, name) {
+            currentCurrency = name;
+            currentCode     = code;
+
+            document.querySelectorAll('.rate-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('card-' + code).classList.add('selected');
+
+            if (code !== 'CON' && rates[code] > 0) {
+                els.tasa.value = rates[code].toFixed(2);
+            }
+
+            // MEJORA 4: mostrar/ocultar botón "Usar tasa oficial"
+            els.btnUsarOficial.style.display = (code === 'CON') ? 'inline-block' : 'none';
+
+            updateLabels();
+            calc();
+        }
+
+        // ========================================
+        // MEJORA 4: Rellenar tasa desde BCV en modo CON
+        // ========================================
+        function usarTasaOficial() {
+            if (rates.USD > 0) {
+                els.tasa.value = rates.USD.toFixed(2);
+                toast('📌 Tasa BCV cargada como base', 'success', 2000);
+                calc();
+            } else {
+                toast('⚠️ Primero actualiza las tasas', 'error', 2000);
+            }
+        }
+
+        // ========================================
+        // 🔄 CAMBIAR DIRECCIÓN — FIX 2
+        // ========================================
+        function setDirection(dir) {
+            direction = dir;
+
+            document.getElementById('btnDivisaABs').classList.toggle('active', dir === 'DivisaABs');
+            document.getElementById('btnBsADivisa').classList.toggle('active', dir === 'BsADivisa');
+            document.getElementById('btnDivisaABs').setAttribute('aria-selected', dir === 'DivisaABs');
+            document.getElementById('btnBsADivisa').setAttribute('aria-selected', dir === 'BsADivisa');
+
+            // ✅ FIX 2: Re-llenar la tasa al cambiar dirección (si no es CON)
+            if (currentCode !== 'CON' && rates[currentCode] > 0) {
+                els.tasa.value = rates[currentCode].toFixed(2);
+            }
+
+            updateLabels();
+            calc();
+        }
+
+        // ========================================
+        // 🏷️ ACTUALIZAR LABELS DINÁMICOS
+        // ========================================
+        function updateLabels() {
+            const txtDivisaABs = document.getElementById('txtDivisaABs');
+            const txtBsADivisa = document.getElementById('txtBsADivisa');
+
+            if (currentCode === 'CON') {
+                txtDivisaABs.innerText = '$ en Acuerdo, a Bs';
+                txtBsADivisa.innerText = 'Bs en Acuerdo, a $';
+            } else {
+                txtDivisaABs.innerText = `De ${currentCurrency} a Bs`;
+                txtBsADivisa.innerText = `De Bs a ${currentCurrency}`;
+            }
+
+            const labelsTasa = {
+                'USD': 'TASA DÓLAR $ (BCV)',
+                'EUR': 'TASA EURO € (Internacional)',
+                'BIN': 'TASA BINANCE ₮ (P2P)',
+                'CON': direction === 'DivisaABs' ? '💬 TU TASA ACORDADA (Bs por $)' : '💬 TU TASA ACORDADA ($ por Bs)'
+            };
+
+            if (direction === 'DivisaABs') {
+                els.labelMonto.innerText = (currentCode === 'CON') ? 'MONTO EN $' : `MONTO EN ${currentCurrency.toUpperCase()}`;
+                els.labelTasa.innerText  = labelsTasa[currentCode];
+                els.resLabel.innerText   = '💰 TOTAL A RECIBIR (Bs):';
+            } else {
+                els.labelMonto.innerText = 'MONTO EN BOLÍVARES (Bs)';
+                els.labelTasa.innerText  = labelsTasa[currentCode];
+                els.resLabel.innerText   = (currentCode === 'CON') ? '💎 $ A RECIBIR:' : `${currentCurrency.toUpperCase()} A RECIBIR:`;
+            }
+        }
+
+        // ========================================
+        // 🧮 CALCULAR RESULTADO
+        // ========================================
+        function calc() {
+            const m = parseFloat(els.monto.value) || 0;
+            const t = parseFloat(els.tasa.value) || 0;
+
+            if (m > 0 && t > 0) {
+                els.resBox.style.display = 'block';
+                if (direction === 'DivisaABs') {
+                    const total = m * t;
+                    els.resTotal.innerText = 'Bs ' + total.toLocaleString('es-VE', { minimumFractionDigits: 2 });
+                } else {
+                    const total  = m / t;
+                    const simbolo = currentCode === 'CON' ? '$' : (currentCode === 'EUR' ? '€' : currentCurrency);
+                    els.resTotal.innerText = total.toFixed(2) + ' ' + simbolo;
+                }
+            } else {
+                els.resBox.style.display = 'none';
+            }
+        }
+
+        // ========================================
+        // 🕐 TIMESTAMP
+        // ========================================
+        function updateLastUpdateTime() {
+            if (lastFetchTime) {
+                const time = lastFetchTime.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+                els.lastUpdate.innerText = `Actualizado: ${time}`;
+            }
+        }
+
+        // ========================================
+        // 📱 ENVIAR A WHATSAPP
+        // ========================================
+        function sendWA() {
+            const m     = els.monto.value.trim();
+            const t     = els.tasa.value.trim();
+            const total = els.resTotal.innerText.trim();
+
+            if (!m || !t) {
+                toast('⚠️ Ingresa monto y tasa primero', 'error');
+                return;
+            }
+
+            const nombreMoneda = (currentCode === 'CON') ? '$' : currentCurrency;
+            const fuente       = getFuenteLabel();
+            const emoji        = getFuenteEmoji();
+
+            let labelTasaMsg = '';
+            if (currentCode === 'USD')      labelTasaMsg = 'Tasa BCV';
+            else if (currentCode === 'EUR') labelTasaMsg = 'Tasa Euro';
+            else if (currentCode === 'BIN') labelTasaMsg = 'Tasa Binance P2P';
+            else                            labelTasaMsg = 'Tasa Acordada';
+
+            let msg = '';
+            if (direction === 'DivisaABs') {
+                msg = `⚡ *Epic Converter LUAN*\n\n` +
+                    `🤝 *Operación:* Venta de ${nombreMoneda}\n` +
+                    `💵 *Cantidad:* ${m} ${nombreMoneda}\n` +
+                    `📊 *${labelTasaMsg}:* ${t} Bs\n` +
+                    `💰 *Total a recibir en Bs:* ${total}\n\n` +
+                    `${emoji} _Referencia: ${fuente}_\n` +
+                    `_LUANSystem™ Professional_\n` +
+                    `_Ing. LuisLa_`;
+            } else {
+                msg = `⚡ *Epic Converter LUAN*\n\n` +
+                    `🤝 *Operación:* Compra de ${nombreMoneda} con Bs\n` +
+                    `💸 *Monto enviado:* ${m} Bs\n` +
+                    `📊 *${labelTasaMsg}:* ${t} Bs\n` +
+                    `💎 *Total en ${nombreMoneda}:* ${total}\n\n` +
+                    `${emoji} _Referencia: ${fuente}_\n` +
+                    `_LUANSystem™ Professional_\n` +
+                    `_Ing. LuisLa_`;
+            }
+
+            const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+            toast('📤 Abriendo WhatsApp...', 'success', 2000);
+        }
+
+        // ========================================
+        // 🏷️ HELPERS WHATSAPP
+        // ========================================
+        function getFuenteLabel() {
+            switch (currentCode) {
+                case 'USD': return 'Banco Central de Venezuela (BCV)';
+                case 'EUR': return 'Tasa Euro Oficial (EUR/VES)';
+                case 'BIN': return 'Binance P2P — USDT/VES';
+                case 'CON': return '💬 Tasa Personalizada / Acuerdo entre partes';
+                default:    return '';
+            }
+        }
+        function getFuenteEmoji() {
+            switch (currentCode) {
+                case 'USD': return '🏦';
+                case 'EUR': return '🇪🇺';
+                case 'BIN': return '🟡';
+                case 'CON': return '🤝';
+                default:    return '📌';
+            }
+        }
+
+        // ========================================
+        // ⌨️ EVENT LISTENERS
+        // ========================================
+        els.monto.addEventListener('input', calc);
+        els.tasa.addEventListener('input', calc);
+
+        [els.monto, els.tasa].forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { calc(); input.blur(); }
+            });
+        });
+
+        // ========================================
+        // 🔄 SERVICE WORKER (PWA)
+        // ========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('./service-worker.js');
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                toast('🔄 Nueva versión disponible. Recarga para actualizar.', 'info', 5000);
+                            }
+                        });
+                    });
+                } catch (err) {
+                    console.error('❌ Error registrando Service Worker:', err);
+                }
+            });
+        }
+
+        // ========================================
+        // 🚀 INICIALIZACIÓN — FIX 3: sin guardar ceros al arranque
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(); // El localStorage se guarda DENTRO de loadData() solo si el fetch es exitoso
+
+            setInterval(() => {
+                if (document.visibilityState === 'visible' && navigator.onLine) {
+                    loadData();
+                }
+            }, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>
